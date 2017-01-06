@@ -89,6 +89,7 @@ function! s:viewer.open(options) abort "{{{
 		silent! exec 'buffer ' . self.buffer_name
 	endif
 
+	setlocal nomodifiable
 	setlocal noswapfile
 	setlocal undolevels=-1
 	setlocal buftype=nofile
@@ -155,12 +156,13 @@ function! s:viewer.render(options) abort "{{{
 	let cursor_mode = get(a:options, 'cursor', '')
 	let cursor_mode = cursor_mode ==# 'module' ? module_name : cursor_mode
 
-	let restore_pos = getpos('.')
-
 	for module_name in self.module_names
 		let self.modules[module_name].range.start_line	= -1
 		let self.modules[module_name].range.end_line	= -1
 	endfor
+
+	setlocal modifiable
+	let restore_pos = getpos('.')
 
 	" Clear buffer
 	silent 1,$delete _
@@ -185,6 +187,7 @@ function! s:viewer.render(options) abort "{{{
 		call cursor(line('.') + 1, col('.'))
 	endfor
 
+	setlocal nomodifiable
 	call setpos('.', restore_pos)
 endfunction "}}}
 
