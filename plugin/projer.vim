@@ -20,6 +20,7 @@ set cpo&vim
 "==================================================
 " Commands {{{
 command! -n=0 ProjerToggleExplorer	call projer#core#toggle_view({'viewer':'left'})
+command! -n=0 ProjerToggleDrives	call projer#core#toggle_view({'module':'drives', 'cursor':'module'})
 " }}}
 
 "==================================================

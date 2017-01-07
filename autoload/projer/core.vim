@@ -17,7 +17,7 @@ set cpo&vim
 "--------------------------------------------------
 " Default modules for each viewers {{{
 if !exists('g:projer_left_modules')
-	let g:projer_left_modules = ''
+	let g:projer_left_modules = 'drives'
 endif
 if !exists('g:projer_right_modules')
 	let g:projer_right_modules = ''
