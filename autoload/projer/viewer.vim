@@ -47,6 +47,16 @@ function! s:viewer.initialize(params) abort "{{{
 	endfor
 endfunction "}}}
 
+"--------------------------------------------------
+" Define commands
+function! s:viewer.define_commands() abort "{{{
+	for event in split(g:projer_basic_events . ',' . g:projer_extra_events, ',')
+		exec 'command! -buffer -n=* ' . event . ' call projer#core#on_event(''' . self.id . ''', ''' . event . ''', <f-args>)'
+	endfor
+
+	nnoremap <buffer> <CR> :Decide<CR>
+endfunction "}}}
+
 "==================================================
 " *** View Operations ***
 "--------------------------------------------------
@@ -82,6 +92,8 @@ function! s:viewer.open(options) abort "{{{
 	if !bufexists(self.buffer_name)
 		silent! exec self.location . ' vertical ' . self.size . ' new'
 		silent! exec 'edit ' . self.buffer_name
+
+		call self.define_commands()
 	else
 		if !self.is_open({})
 			silent! exec self.location . ' vertical ' . self.size . ' split'
@@ -189,6 +201,21 @@ function! s:viewer.render(options) abort "{{{
 
 	setlocal nomodifiable
 	call setpos('.', restore_pos)
+endfunction "}}}
+
+"==================================================
+" *** Events ***
+"--------------------------------------------------
+" Event Handler
+function! s:viewer.on_event(event, args) abort "{{{
+	let line = line('.')
+
+	for [module_name, module] in items(self.modules)
+		if module.range.start_line <= line && line <= module.range.end_line
+			exec 'call projer#' . module_name . '#on_event(a:event, a:args)'
+			break
+		endif
+	endfor
 endfunction "}}}
 
 "==================================================

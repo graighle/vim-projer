@@ -17,7 +17,7 @@ set cpo&vim
 "--------------------------------------------------
 " Default modules for each viewers {{{
 if !exists('g:projer_left_modules')
-	let g:projer_left_modules = 'drives'
+	let g:projer_left_modules = 'drives,filetree'
 endif
 if !exists('g:projer_right_modules')
 	let g:projer_right_modules = ''
@@ -71,11 +71,15 @@ let s:locations.top		= 'aboveleft'
 let s:locations.bottom	= 'belowright'
 
 "--------------------------------------------------
-" Viewer locations
+" Events
+let g:projer_basic_events = 'Decide'
+if !exists('g:projer_extra_events')
+	let g:projer_extra_events = ''
+endif
 
+"--------------------------------------------------
 let t:projer_core_is_init = 0
 let t:projer_viewers = {}
-let t:projer_module_viewer_names = {}
 
 "==================================================
 " *** Initializations ***
@@ -87,13 +91,8 @@ function! s:initialize() abort "{{{
 	endif
 
 	let t:projer_viewers = {}
-	let t:projer_module_viewer_names = {}
 	for viewer_name in ['left', 'right', 'top', 'bottom']
 		let t:projer_viewers[viewer_name] = s:create_viewer(viewer_name)
-
-		for module_name in t:projer_viewers[viewer_name].module_names
-			let t:projer_module_viewer_names[module_name] = viewer_name
-		endfor
 	endfor
 
 	let t:projer_core_is_init = 1
@@ -144,7 +143,11 @@ function! projer#core#open_view(options) abort "{{{
 	endif
 
 	let viewer_name = s:get_target_viewer_name(a:options)
-	call t:projer_viewers[viewer_name].open_view(a:options)
+	if viewer_name ==# ''
+		echomsg 'No viewer assigned to ' . get(a:options, 'module', '') . ' module'
+	else
+		call t:projer_viewers[viewer_name].open(a:options)
+	endif
 endfunction "}}}
 
 "--------------------------------------------------
@@ -155,7 +158,15 @@ function! projer#core#close_view(options) abort "{{{
 	endif
 
 	let viewer_name = s:get_target_viewer_name(a:options)
-	call t:projer_viewers[viewer_name].close_view(a:options)
+	call t:projer_viewers[viewer_name].close(a:options)
+endfunction "}}}
+
+"==================================================
+" *** Events ***
+"--------------------------------------------------
+" Event Handler
+function! projer#core#on_event(viewer_name, event, ...) abort "{{{
+	call t:projer_viewers[a:viewer_name].on_event(a:event, a:000)
 endfunction "}}}
 
 "==================================================
@@ -169,7 +180,13 @@ function! s:get_target_viewer_name(options) abort "{{{
 	endif
 
 	let module_name = get(a:options, 'module', '')
-	return get(t:projer_module_viewer_names, module_name, '')
+	for [viewer_name, viewer] in items(t:projer_viewers)
+		if index(viewer.module_names, module_name) != -1
+			return viewer_name
+		endif
+	endfor
+
+	return ''
 endfunction "}}}
 
 let &cpo = s:save_cpo

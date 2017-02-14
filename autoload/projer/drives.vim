@@ -67,10 +67,35 @@ function! projer#drives#render() abort "{{{
 
 	for drive in s:drives
 		let line = line('.') + 1
-		let b:render_drives[drive.path] = line
+		let b:render_drives[drive.name] = line
 
 		call setline(line, ' +' . drive.name)
 		call cursor(line, col('.'))
+	endfor
+endfunction "}}}
+
+"==================================================
+" *** Events ***
+"--------------------------------------------------
+" Event Handler
+function! projer#drives#on_event(event, args) abort "{{{
+	let fun = 's:on_event_' . tolower(a:event)
+	if exists('*' . fun)
+		exec 'call ' . fun . '(a:args)'
+	endif
+endfunction "}}}
+
+"--------------------------------------------------
+" Decide event : Open directory into filetree module
+function! s:on_event_decide(args) abort "{{{
+	let line = line('.')
+
+	for drive in s:drives
+		if get(b:render_drives, drive.name, -1) == line
+			call projer#filetree#change_root(drive.name, drive.path)
+			call projer#core#open_view({'module':'filetree', 'cursor':'module'})
+			break
+		endif
 	endfor
 endfunction "}}}
 
