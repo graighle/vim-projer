@@ -54,7 +54,7 @@ function! s:viewer.define_commands() abort "{{{
 		exec 'command! -buffer -n=* ' . event . ' call projer#core#on_event(''' . self.id . ''', ''' . event . ''', <f-args>)'
 	endfor
 
-	nnoremap <buffer> <CR> :Decide<CR>
+	nnoremap <silent><buffer> <CR> :Decide<CR>
 endfunction "}}}
 
 "==================================================
